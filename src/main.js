@@ -6,6 +6,13 @@ import store from './store'
 import VueKeycloakJs from '@dsb-norge/vue-keycloak-js'
 
 import 'bootstrap'
+import moment from 'moment'
+
+Vue.filter('formatDate', function(value) {
+  if (value) {
+    return moment(String(value)).format('MM/DD/YYYY hh:mm')
+  }
+})
 
 Vue.config.productionTip = false
 
