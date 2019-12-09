@@ -15,7 +15,7 @@ export default new Vuex.Store({
       if (userData.keycloakReturn.authenticated){
         localStorage.setItem('user', JSON.stringify(userData.keycloakReturn))
         axios.defaults.headers.common['Authorization'] = `Bearer ${
-          userData.keycloakReturn.token
+          Vue.prototype.$keycloak.token
         }`
       }
     },

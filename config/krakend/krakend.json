@@ -6,8 +6,8 @@
             "allow_origins": [
                 "http*"
             ],
-            "allow_headers": ["Origin", "Authorization", "Access-Control-Allow-Origin", "Content-Type", "Accept", "X-Auth-Token"],
-            "expose_headers": ["Content-Type", "Access-Control-Allow-Origin", "Content-Length"],
+            "allow_headers": ["Origin", "Authorization", "Content-Length", "Content-Type", "Accept", "X-Auth-Token"],
+            "expose_headers": ["Content-Type", "Content-Length"],
             "max_age": "12h",
             "allow_credentials": false,
             "allow_methods": [
@@ -23,7 +23,7 @@
             ]
         },
         "github_com/devopsfaith/krakend-gologging": {
-            "level": "INFO",
+            "level": "DEBUG",
             "prefix": "[KRAKEND][DMARC]",
             "syslog": false,
             "stdout": true,
@@ -103,20 +103,28 @@
                     "roles_key": "userRealmRoles"
                 }
             },
-            "output_encoding": "json",
+            "output_encoding": "no-op",
             "concurrent_calls": 1,
             "backend": [
                 {
                     "url_pattern": "/api/v1/upload_bundle",
-                    "encoding": "json",
-                    "sd": "dns",
+                    "encoding": "no-op",
+                    "sd": "static",
                     "extra_config": {},
-                    "method": "POST",
                     "host": [
-                        "http://dmarc-rest-api"
+                        "http://dmarc-rest-api:8080"
                     ],
                     "disable_host_sanitize": true
                 }
+            ],
+            "headers_to_pass": [
+                "Accept",
+                "Accept-Encoding",
+                "Content-Encoding",
+                "Content-Length",
+                "Content-Type",
+                "Sec-Fetch-Mode",
+                "Sec-Fetch-Site"
             ]
         }
     ]

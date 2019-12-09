@@ -90,7 +90,7 @@ export default {
     submitFile () {
       var self = this
       let formData = new FormData()
-      formData.append('file', this.file)
+      formData.append('bundleFile', this.file)
       axios.post( process.env.VUE_APP_API_GATEWAY + '/uploadDMARCBundle',
         formData,
         {
