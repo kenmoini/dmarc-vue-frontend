@@ -3,12 +3,23 @@
     <h1>Process DMARC Bundle</h1>
     <p class="lead"><em>This page allows you to upload a DMARC report bundle file and have the results displayed in a series of charts and tables.</em></p>
 
-    <div class="row mb-5">
+    <div class="row mt-5 mb-5">
       <div class="col-sm">
         <button @click="testGateway" class="btn btn-primary float-right">Test Gateway</button>
         <p>
           <strong>Test API Gateway Connection</strong><br />
-          <span>{{ gatewayRes }}</span>
+          <pre>{{ gatewayRes }}</pre>
+        </p>
+        <hr class="mt-5" />
+      </div>
+    </div>
+
+    <div class="row mb-5">
+      <div class="col-sm">
+        <button @click="testJWT" class="btn btn-primary float-right">Test JSON Web Token</button>
+        <p>
+          <strong>Test API Gateway JWT Validation</strong><br />
+          <pre>{{ testJWTRes }}</pre>
         </p>
         <hr class="mt-5" />
       </div>
@@ -17,15 +28,17 @@
     <div class="row mb-5">
       <div class="col-sm">
         <p>
-          <strong>Upload Bundle</strong><br />
-          <span>{{ uploadBundleRes }}</span>
+          <strong>Upload Bundle</strong>
         </p>
         <form @submit.prevent="submitFile">
-            <label>File
+            <input class="btn btn-primary float-right" type="submit" value="Submit" />
+            <label>
               <input type="file" id="file" ref="file" v-on:change="handleFileUpload()"/>
             </label>
-            <input type="submit" value="Submit" />
         </form>
+        <p>
+          <pre>{{ uploadBundleRes }}</pre>
+        </p>
       </div>
     </div>
   </div>
@@ -40,6 +53,7 @@ export default {
     return {
       file: '',
       gatewayRes: '',
+      testJWTRes: '',
       uploadBundleRes: ''
     }
   },
@@ -49,11 +63,7 @@ export default {
     },
     testGateway () {
       var self = this
-      axios.get( process.env.VUE_APP_API_GATEWAY + '/healthz', {
-        headers: {
-            'Content-Type': 'multipart/form-data'
-        }
-      }).then(function(response){
+      axios.get( process.env.VUE_APP_API_GATEWAY + '/healthz').then(function(response){
         /* eslint-disable-next-line */
         console.log('SUCCESS!!', response);
         self.gatewayRes = response
@@ -64,24 +74,39 @@ export default {
         self.gatewayRes = error
       });
     },
+    testJWT () {
+      var self = this
+      axios.get( process.env.VUE_APP_API_GATEWAY + '/testjwt' ).then(function(response){
+        /* eslint-disable-next-line */
+        console.log('SUCCESS!!', response);
+        self.testJWTRes = response
+      })
+      .catch(function(error){
+        /* eslint-disable-next-line */
+        console.log('FAILURE!!', error);
+        self.testJWTRes = error
+      });
+    },
     submitFile () {
+      var self = this
       let formData = new FormData()
       formData.append('file', this.file)
-      axios.post( process.env.VUE_APP_API_GATEWAY + '/testjwt',
+      axios.post( process.env.VUE_APP_API_GATEWAY + '/uploadDMARCBundle',
         formData,
         {
           headers: {
               'Content-Type': 'multipart/form-data'
-          },
-          crossdomain: true
+          }
         }
-      ).then(function(){
+      ).then(function(response){
         /* eslint-disable-next-line */
-        console.log('SUCCESS!!');
+        console.log('SUCCESS!!', response)
+        self.uploadBundleRes = response
       })
-      .catch(function(){
+      .catch(function(error){
         /* eslint-disable-next-line */
-        console.log('FAILURE!!');
+        console.log('FAILURE!!', error)
+        self.uploadBundleRes = error
       });
     }
   }

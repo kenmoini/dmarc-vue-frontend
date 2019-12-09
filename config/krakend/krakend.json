@@ -1,0 +1,123 @@
+{
+    "version": 2,
+    "port": 8080,
+    "extra_config": {
+        "github_com/devopsfaith/krakend-cors": {
+            "allow_origins": [
+                "http*"
+            ],
+            "allow_headers": ["Origin", "Authorization", "Access-Control-Allow-Origin", "Content-Type", "Accept", "X-Auth-Token"],
+            "expose_headers": ["Content-Type", "Access-Control-Allow-Origin", "Content-Length"],
+            "max_age": "12h",
+            "allow_credentials": false,
+            "allow_methods": [
+                "GET",
+                "HEAD",
+                "POST",
+                "PUT",
+                "DELETE",
+                "CONNECT",
+                "OPTIONS",
+                "TRACE",
+                "PATCH"
+            ]
+        },
+        "github_com/devopsfaith/krakend-gologging": {
+            "level": "INFO",
+            "prefix": "[KRAKEND][DMARC]",
+            "syslog": false,
+            "stdout": true,
+            "format": "default"
+        }
+    },
+    "timeout": "3000ms",
+    "cache_ttl": "300s",
+    "output_encoding": "json",
+    "name": "DMARC KrakenD API Gateway Service",
+    "endpoints": [
+        {
+            "endpoint": "/healthz",
+            "extra_config": {
+                "github.com/devopsfaith/krakend/proxy": {
+                    "static": {
+                        "data": {
+                            "status": "OK"
+                        },
+                        "strategy": "always"
+                    }
+                }
+            },
+            "backend": [
+                {
+                    "url_pattern": "/",
+                    "host": [
+                        "http://fake-backend"
+                    ]
+                }
+            ]
+        },
+        {
+            "endpoint": "/testjwt",
+            "method": "GET",
+            "extra_config": {
+                "github.com/devopsfaith/krakend-jose/validator": {
+                "alg": "RS256",
+                "jwk-url": "https://sso-polyglot-academy.ocp.fiercesw.network/auth/realms/DMARCSSORealm/protocol/openid-connect/certs" ,
+                "issuer": "https://sso-polyglot-academy.ocp.fiercesw.network/auth/realms/DMARCSSORealm" ,
+                "roles": [],
+                "roles_key": "userRealmRoles"
+                },
+                "github.com/devopsfaith/krakend/proxy": {
+                "static": {
+                    "data": {
+                        "jwt": "valid"
+                    },
+                    "strategy": "always"
+                }
+                }
+            },
+            "output_encoding": "json",
+            "concurrent_calls": 1,
+            "backend": [
+                {
+                "url_pattern": "/",
+                "encoding": "json",
+                "sd": "static",
+                "extra_config": {},
+                "method": "GET",
+                "host": [
+                    "http://fake-backend" 
+                ],
+                "disable_host_sanitize": true
+                }
+            ]
+        },
+        {
+            "endpoint": "/uploadDMARCBundle",
+            "method": "POST",
+            "extra_config": {
+                "github.com/devopsfaith/krakend-jose/validator": {
+                    "alg": "RS256",
+                    "jwk-url": "https://sso-polyglot-academy.ocp.fiercesw.network/auth/realms/DMARCSSORealm/protocol/openid-connect/certs",
+                    "issuer": "https://sso-polyglot-academy.ocp.fiercesw.network/auth/realms/DMARCSSORealm",
+                    "roles_key": "userRealmRoles"
+                }
+            },
+            "output_encoding": "json",
+            "concurrent_calls": 1,
+            "backend": [
+                {
+                    "url_pattern": "/api/v1/upload_bundle",
+                    "encoding": "json",
+                    "sd": "dns",
+                    "extra_config": {},
+                    "method": "POST",
+                    "host": [
+                        "http://dmarc-rest-api"
+                    ],
+                    "disable_host_sanitize": true
+                }
+            ]
+        }
+    ]
+}
