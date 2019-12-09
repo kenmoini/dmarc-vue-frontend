@@ -2,9 +2,8 @@
 FROM node:lts-alpine as build-stage
 WORKDIR /app
 COPY . .
-RUN yarn global add @vue/cli
 RUN yarn install
-RUN vue-cli-service build
+RUN yarn build
 
 # production stage
 FROM nginx:stable-alpine as production-stage
